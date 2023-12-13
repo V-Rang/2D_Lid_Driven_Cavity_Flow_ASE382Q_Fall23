@@ -7,6 +7,7 @@ from utils import Duv_maker, G_update_u_v
 import scipy
 
 
+
 n = 19 #sqaure mesh, no of points in pressure grid along each dimension
 nx,ny = n,n #keeping it square for now. [0,1] x [0,1]
 
@@ -45,7 +46,7 @@ lhs_v_star = v_star_solver_lhs_operator(n,dt,Re,dx)
 laplacian_pressure = create_laplacian_for_pressure(n,dx,dt)
 
 
-err_vals = []
+# err_vals = []
 for t in range(nt):
 
     u_star_rhs = u_star_solver_rhs(n, dt, Re, dx, u_n, v_n, u_n_1, v_n_1)
@@ -65,13 +66,13 @@ for t in range(nt):
     u_n,v_n = u_star - dt*Gx, v_star - dt*Gy
 
 
-    err_vals.append(np.linalg.norm(u_n - u_n_1,2)/(np.linalg.norm(u_n,2)*dt)   )
-    # if(np.linalg.norm(u_n - u_n_1) < tol):
-    #     print(f"Converged, no of iterations = {t}")
-    #     break   
+    # err_vals.append(np.linalg.norm(u_n - u_n_1,2)/(np.linalg.norm(u_n,2)*dt)   )
+    if(np.linalg.norm(u_n - u_n_1) < tol):
+        print(f"Converged, no of iterations = {t}")
+        break   
 
 
-plt.semilogy(err_vals)
+# plt.semilogy(err_vals)
 
 plt.show()
 u_n,v_n = u_n.reshape(ny+2,nx+1),v_n.reshape(nx+1,ny+2)
