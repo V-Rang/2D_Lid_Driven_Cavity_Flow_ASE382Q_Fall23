@@ -3,7 +3,7 @@
 # T(x,y) = sin(2pi x)cos(pi y)
 #The expected rhs when this vector is multiplied by the Laplacian is 
 # rhs(x,y) = -5 * pi**2 * sin(2pi x)cos(pi y)
-#We compare the error of our numerical solution against this analytical soolution
+#We compare the error of our numerical solution against this analytical solution
 #The expected order of convergence is 2.
 
 
