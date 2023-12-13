@@ -36,7 +36,7 @@ def plot_velocities_quiver_plot(uvals,vvals,xlims,ylims,nx,ny):
     fig,ax = plt.subplots()
     ax.scatter(X,Y, s=50, c='red', label='Coordinates')
     #scale will have to be adjusted to get optimuum plot
-    ax.quiver(X, Y, ucc, vcc, color="C0", angles='xy',scale_units=None, scale=0.8, width=.015,label='Velocity')
+    ax.quiver(X, Y, ucc, vcc, color="C0", angles='xy',scale_units=None, scale=0.75, width=.015,label='Velocity')
     ax.legend(loc='center left', bbox_to_anchor=(1,0.5))
     ax.set(xlim=(xlower, xupper), ylim=(ylower, yupper))
     plt.show()
@@ -74,8 +74,6 @@ def plot_pressure_contour(p_c,xlims,ylims,nx,ny):
 
     p_c = p_c.reshape(ny+2,nx+2)
     p_c = p_c[1:-1,1:-1]
-
-
     
     # print(p_c.shape)
 
@@ -102,7 +100,6 @@ def plot_pressure_contour(p_c,xlims,ylims,nx,ny):
     min_range = np.min(p_c)
     max_range = np.max(p_c)
 
-          
     # print(min_range)
     # print(max_range)
 
@@ -234,11 +231,10 @@ def create_laplacian_for_pressure(n,h,k):
                 col.append(ind+new_phy_size)
         
     laplacian_for_pressure = scipy.sparse.csr_array((data,(row,col)),shape=((n+2)**2 ,(n+2)**2   ) )
-
     
     return laplacian_for_pressure
-    # return b,T_a,laplacian_for_pressure
 
+    # return b,T_a,laplacian_for_pressure
 
 # row,col,data = np.array(row),np.array(col),np.array(data)
 # print(row)
@@ -262,7 +258,6 @@ def create_laplacian_for_pressure(n,h,k):
 #########********************######################
 # plot_pressure_contour(x,T_a,[0,1],[0,1],20,20) #Imp line
 #########********************######################
-
 
 # pr_np_arr= pr_lap.toarray()
 # print(pr_np_arr)
@@ -309,13 +304,16 @@ def Duv_maker(u,v,n,h):
     u = u.reshape( ((ny+2),(nx+1)) )
     v = v.reshape( ((ny+1),(nx+2))  )
     
-    Duv = np.zeros((n+2)**2,dtype=np.float32)
+    # Duv = np.zeros((n+2)**2,dtype=np.float32)
+    Duv = np.zeros((n+2)**2,dtype=np.float64)
     Duv_int = (u[1:-1,1:] - u[1:-1,0:-1])/h + (v[1:,1:-1] - v[0:-1,1:-1])/h
     Duv_int = Duv_int.flatten() 
 
     int_index = 0
     new_phy_size = n+2
-    Duv = np.zeros((n+2)**2,dtype=np.float32)
+    # Duv = np.zeros((n+2)**2,dtype=np.float32)
+    Duv = np.zeros((n+2)**2,dtype=np.float64)
+
 
     for ind in range(Duv.shape[0]):
         i = ind // new_phy_size
@@ -413,7 +411,9 @@ def N_u_maker(u,v,n,h):
     # print(vcc,'\n')
     # print(vcc_u_displ)
 
-    N_u = np.zeros(((ny+2)*(nx+1)),dtype=np.float32)
+    # N_u = np.zeros(((ny+2)*(nx+1)),dtype=np.float32)
+    N_u = np.zeros(((ny+2)*(nx+1)),dtype=np.float64)
+    
     # h = 1
     N_u_int = -np.multiply(u[1:-1,1:-1],  (1/(2*h))*(  u[1:-1,2:] - u[1:-1,0:-2] )  ) -np.multiply( vcc_u_displ, (1/(2*h))*(  u[2:,1:-1] - u[0:-2,1:-1]    )  )
     N_u_int = N_u_int.flatten()
@@ -441,7 +441,9 @@ def N_v_maker(u,v,n,h):
     ucc = (u[1:-1,0:-1]+ u[1:-1,1:])/2
     ucc_v_displ = (ucc[0:-1,:] + ucc[1:,:])/2
 
-    N_v = np.zeros(((ny+1)*(nx+2)),dtype=np.float32)
+    # N_v = np.zeros(((ny+1)*(nx+2)),dtype=np.float32)
+    N_v = np.zeros(((ny+1)*(nx+2)),dtype=np.float64)
+    
     # h = 1
 # N_v_int = -np.multiply(u[1:-1,1:-1],  (1/(2*h))*(  u[1:-1,2:] - u[1:-1,0:-2] )  ) -np.multiply( vcc_u_displ, (1/(2*h))*(  u[2:,1:-1] - u[0:-2,1:-1]    )  )
     N_v_int = -np.multiply( ucc_v_displ,(1/(2*h))*(v[1:-1,2:] - v[1:-1,0:-2] )) - np.multiply( v[1:-1,1:-1], (1/(2*h))*(v[2:,1:-1] - v[0:-2,1:-1]) )
@@ -479,8 +481,7 @@ def u_star_solver_lhs_operator(n,k,Re,h):
 
             row_u.append(ind)
             col_u.append(ind+nx+1)
-            data_u_lhs.append(-1)
-
+            data_u_lhs.append(1)
 
         elif( i == ny+1): #top
             row_u.append(ind)
@@ -490,7 +491,6 @@ def u_star_solver_lhs_operator(n,k,Re,h):
             row_u.append(ind)
             col_u.append(ind-(nx+1) )
             data_u_lhs.append(1) #utop + u(ind - (nx+1)) = 2, rhs wont be zero
-
 
         else:
             if( j == 0 or j == nx): #left or right boundary
@@ -519,9 +519,11 @@ def u_star_solver_lhs_operator(n,k,Re,h):
                 col_u.append(ind+(nx+1))
                 data_u_lhs.append(-factor)
 
-    
+    # print(row_u)
+    # print(col_u)
+    # print(data_u_lhs)
     lhs_u_star_mat = scipy.sparse.csr_array((data_u_lhs,(row_u,col_u)),shape=( (ny+2)*(nx+1) ,(ny+2)*(nx+1)   ) )
-
+    
     return lhs_u_star_mat
 
 def u_star_solver_rhs(n,k,Re,h,u_n,v_n,u_n_1,v_n_1):
@@ -529,7 +531,9 @@ def u_star_solver_rhs(n,k,Re,h,u_n,v_n,u_n_1,v_n_1):
     N_u_n_1 = N_u_maker(u_n_1,v_n_1,n,h)
     
     nx,ny = n,n
-    data_u_rhs = np.zeros(((ny+2)*(nx+1)),dtype=np.float32)
+    # data_u_rhs = np.zeros(((ny+2)*(nx+1)),dtype=np.float32)
+    data_u_rhs = np.zeros(((ny+2)*(nx+1)),dtype=np.float64)
+
 
     for ind in range((ny+2)*(nx+1)):
         i = ind//(nx+1)
@@ -564,7 +568,7 @@ def v_star_solver_lhs_operator(n,k,Re,h):
                 
                 row_v.append(ind)
                 col_v.append(ind+1)
-                data_v_lhs.append(-1)
+                data_v_lhs.append(1)
 
             elif( j == nx+1): #right
                 
@@ -574,7 +578,7 @@ def v_star_solver_lhs_operator(n,k,Re,h):
                 
                 row_v.append(ind)
                 col_v.append(ind-1)
-                data_v_lhs.append(-1)
+                data_v_lhs.append(1)
             else:
                 row_v.append(ind)
                 col_v.append(ind)
@@ -588,7 +592,7 @@ def v_star_solver_lhs_operator(n,k,Re,h):
                 
                 row_v.append(ind)
                 col_v.append(ind+1)
-                data_v_lhs.append(-1)
+                data_v_lhs.append(1)
             
             elif(j == nx+1): #right
                 row_v.append(ind)
@@ -597,7 +601,7 @@ def v_star_solver_lhs_operator(n,k,Re,h):
                 
                 row_v.append(ind)
                 col_v.append(ind-1)
-                data_v_lhs.append(-1)
+                data_v_lhs.append(1)
 
             else: #interior
 
@@ -630,7 +634,9 @@ def v_star_solver_rhs(n,k,Re,h,u_n,v_n,u_n_1,v_n_1):
     N_v_n_1 = N_v_maker(u_n_1, v_n_1, n, h)
     
     nx,ny = n,n
-    data_v_rhs = np.zeros(((ny+1)*(nx+2)),dtype=np.float32)
+    # data_v_rhs = np.zeros(((ny+1)*(nx+2)),dtype=np.float32)
+    data_v_rhs = np.zeros(((ny+1)*(nx+2)),dtype=np.float64)
+
 
     for ind in range((ny+1)*(nx+2)):
         i = ind//(nx+2)
