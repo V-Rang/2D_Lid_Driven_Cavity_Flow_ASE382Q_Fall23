@@ -103,7 +103,7 @@ plt.streamplot(X, Y, ucc, vcc, color="black")
 plt.title(f"N = {n+1} points along each dimension and Re = {Re}")
 plt.xlim(0,1)
 plt.ylim(0,1)
-savepath = f"/home/venu/cfd_proj_f23/draft_3/plots/Streamplots/{n+1}_{Re}.png"
+savepath = f"{n+1}_{Re}.png"
 plt.savefig(savepath)
 plt.show()
 
